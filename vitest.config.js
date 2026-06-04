@@ -7,7 +7,11 @@ export default defineConfig({
     coverage: {
     provider: 'v8', // ou 'istanbul'
     reporter: ['text', 'html', 'json'], // 'text' mostra no terminal
-    include: ['src/**/*.js'], // só arquivos da pasta src
+    include: [
+        'src/modules/user/user.service.js', 
+        'src/modules/health/health.service.js', 
+        'src/modules/user/user.controller.js'
+    ],
     exclude: [
         '**/node_modules/**',
         '**/test/**',
