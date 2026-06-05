@@ -239,7 +239,7 @@ function buildTestApp(userService) {
   const app = express();
   app.use(express.json());
   const userController = createUserController(userService);
-  // rotas registradas...
+
   return app;
 }
 ```
@@ -271,17 +271,17 @@ A cobertura foi gerada com o comando:
 
 ```bash
 npm run test:coverage
-# ou: vitest run --coverage
+
 ```
 
 ### Resultados obtidos
 
 | Métrica | Resultado | Meta mínima | Status |
 |---|---|---|---|
-| **Statements** | 90,74% | 80% | ✅ Superada |
-| **Branches** | 88,57% | 80% | ✅ Superada |
-| **Functions** | 93,33% | 80% | ✅ Superada |
-| **Lines** | 90,74% | 80% | ✅ Superada |
+| **Statements** | 94,44% | 80% | ✅ Superada |
+| **Branches** | 91,66% | 80% | ✅ Superada |
+| **Functions** | 100% | 80% | ✅ Superada |
+| **Lines** | 94,44% | 80% | ✅ Superada |
 
 ### Significado de cada métrica
 
@@ -306,7 +306,7 @@ As refatorações foram realizadas na fase **Refactor** dos ciclos TDD, após os
 **Antes:** as funções `findUserById`, `updateUser` e `deleteUser` repetiam o mesmo bloco de código para buscar um usuário e lançar erro caso não fosse encontrado:
 
 ```js
-// Duplicado em três funções
+
 const user = await UserModel.findByPk(id);
 if (!user) throw new Error('Usuário não encontrado.');
 return user;
@@ -350,7 +350,7 @@ function isValidEmail(email) {
 **Antes:** o padrão de resposta de erro estava repetido em todos os handlers do Controller:
 
 ```js
-// Repetido em create, findById, update e delete
+
 res.status(400).json({ error: err.message });
 ```
 
