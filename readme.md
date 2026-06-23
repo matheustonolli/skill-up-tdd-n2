@@ -1,421 +1,395 @@
-# skill-up-tdd
+# SkillUp-TDD
 
-**Disciplina:** Testes de Software 
+**Disciplina:** Testes de Software
 
-**Fase:** 3 
+**Fase:** 3
+
+**Avaliação:** N3 – Evolução do Projeto com TDD
 
 **Integrante:** Matheus Tonolli Cordeiro
 
 ---
 
-## Sumário
+# Sumário
 
 - [Objetivo do Projeto](#objetivo-do-projeto)
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Estrutura do Projeto](#estrutura-do-projeto)
+- [Nova Funcionalidade Implementada](#nova-funcionalidade-implementada)
 - [Conceito de TDD](#conceito-de-tdd)
-- [Desenvolvimento com TDD](#desenvolvimento-com-tdd)
+- [Aplicação do TDD no Projeto](#aplicação-do-tdd-no-projeto)
 - [Testes Unitários](#testes-unitários)
 - [Testes de Integração](#testes-de-integração)
-- [Cobertura de Testes](#cobertura-de-testes)
-- [Refatorações Realizadas](#refatorações-realizadas)
 - [Resultados Obtidos](#resultados-obtidos)
 - [Como Executar](#como-executar)
 - [Conclusão](#conclusão)
 
 ---
 
-## Objetivo do Projeto
+# Objetivo do Projeto
 
-Este projeto foi desenvolvido como avaliação prática da disciplina de Testes de Software, com o objetivo de aplicar a metodologia **Test-Driven Development (TDD)** no desenvolvimento de uma funcionalidade de gerenciamento de usuários em Node.js.
+Este projeto foi desenvolvido como continuação da avaliação N2 da disciplina de Testes de Software, utilizando a metodologia **Test-Driven Development (TDD)**.
 
-O trabalho demonstra na prática:
+Na etapa anterior do projeto foi implementada a funcionalidade de gerenciamento de usuários. Para a N3, o sistema foi evoluído com a implementação de uma nova funcionalidade denominada **Lesson (Lição)**, seguindo o mesmo padrão arquitetural já existente na aplicação.
 
-- A aplicação do ciclo **Red-Green-Refactor** a cada nova funcionalidade;
-- A escrita de testes antes da implementação do código de produção;
-- A validação da lógica de negócio na camada Service por meio de testes unitários;
-- A validação do comportamento HTTP na camada Controller por meio de testes de integração;
-- A realização de refatorações seguras sustentadas pela suíte de testes;
-- A obtenção de cobertura de testes superior à meta mínima estabelecida.
+O objetivo principal foi aplicar na prática os conceitos de desenvolvimento guiado por testes, criando uma nova funcionalidade completa utilizando as camadas Model, Service, Controller e Routes, acompanhadas por testes unitários e de integração.
+
+O trabalho demonstra:
+
+- Aplicação do ciclo Red-Green-Refactor;
+- Desenvolvimento guiado por testes (TDD);
+- Implementação de uma nova funcionalidade seguindo arquitetura modular;
+- Criação de testes unitários e testes de integração;
+- Utilização de mocks para isolamento de dependências;
+- Validação de regras de negócio;
+- Evolução segura do software através da suíte de testes automatizados.
 
 ---
 
-## Tecnologias Utilizadas
+# Tecnologias Utilizadas
 
 | Tecnologia | Função no Projeto |
-|---|---|
-| **Node.js** | Plataforma de execução JavaScript no servidor |
-| **Express** | Framework web para construção da API REST |
-| **Sequelize** | ORM para mapeamento objeto-relacional da camada Model |
-| **Vitest** | Framework de testes unitários e de integração |
-| **Supertest** | Biblioteca para simulação de requisições HTTP nos testes |
-
-> **Observação:** O Sequelize é utilizado pela camada Model para definição do esquema da entidade `User`. Os testes implementados não utilizam banco de dados real — as dependências de persistência são substituídas por mocks durante a execução dos testes.
+|------------|-------------------|
+| Node.js | Ambiente de execução JavaScript |
+| Express | Framework para construção da API |
+| Sequelize | ORM utilizado na camada Model |
+| Vitest | Framework de testes unitários |
+| Supertest | Testes de integração HTTP |
+| bcryptjs | Criptografia de senhas |
+| MySQL / mysql2 | Persistência de dados |
+| dotenv | Variáveis de ambiente |
+| express-session | Controle de sessões |
+| connect-flash | Mensagens temporárias |
+| multer | Upload de arquivos |
+| morgan | Logs de requisições |
 
 ---
 
-## Estrutura do Projeto
+# Estrutura do Projeto
 
-```
+```text
 skill-up-tdd/
 ├── src/
-│   ├── app.js
-│   ├── server.js
-│   ├── config/
-│   │   └── database.js
-│   └── modules/
-│       ├── health/
-│       │   ├── health.service.js
-│       │   └── __tests__/
-│       │       └── health.service.test.js
-│       └── user/
-│           ├── user.model.js
-│           ├── user.service.js
-│           ├── user.controller.js
-│           └── __tests__/
-│               ├── user.service.test.js
-│               └── user.controller.test.js
-├── test/
-│   └── setup.js
-├── vitest.config.js
-└── package.json
+│
+├── app.js
+├── server.js
+│
+├── config/
+│   └── database.js
+│
+└── modules/
+│
+├── health/
+│   ├── health.service.js
+│   └── __tests__/
+│       └── health.service.test.js
+│
+├── user/
+│   ├── user.model.js
+│   ├── user.service.js
+│   ├── user.controller.js
+│   ├── user.routes.js
+│   └── __tests__/
+│       ├── user.service.test.js
+│       └── user.controller.test.js
+│
+└── lesson/
+    ├── lesson.model.js
+    ├── lesson.service.js
+    ├── lesson.controller.js
+    ├── lesson.routes.js
+    └── __tests__/
+        ├── lesson.service.test.js
+        └── lesson.controller.test.js
+
+test/
+└── setup.js
+
+vitest.config.js
+package.json
 ```
 
-### Módulo Health
-
-| Arquivo | Responsabilidade |
-|---|---|
-| `health.service.js` | Retorna informações sobre o estado de saúde da aplicação |
-| `health.service.test.js` | 1 teste unitário que verifica o retorno correto do status |
-
-### Módulo User
-
-| Arquivo | Responsabilidade |
-|---|---|
-| `user.model.js` | Define a entidade `User` com seus atributos via Sequelize |
-| `user.service.js` | Contém toda a lógica de negócio: validações, regras e operações CRUD |
-| `user.controller.js` | Recebe as requisições HTTP, delega ao Service e retorna as respostas |
-| `user.service.test.js` | 15 testes unitários da camada Service |
-| `user.controller.test.js` | 6 testes de integração da camada Controller |
-
-#### Model
-
-Representa a entidade `User` por meio do Sequelize, definindo os campos `id`, `username`, `email`, `password`, `fullName`, `bio` e `profilePicture`, com suas respectivas restrições de nulidade e unicidade.
-
-#### Service
-
-Camada responsável por toda a lógica de negócio da aplicação. Implementa as operações `createUser`, `findUserById`, `updateUser` e `deleteUser`, realizando validações de entrada e aplicando as regras de domínio antes de interagir com a camada de persistência. Utiliza **injeção de dependência** — recebe o Model como parâmetro — o que viabiliza o isolamento completo nos testes unitários.
-
-#### Controller
-
-Camada responsável por traduzir requisições HTTP em chamadas ao Service e transformar os resultados em respostas HTTP adequadas, com os status codes corretos. Implementa os handlers `create`, `findAll`, `findById`, `update` e `delete`.
+A arquitetura foi organizada em módulos independentes, facilitando manutenção, escalabilidade e testes.
 
 ---
 
-## Conceito de TDD
+# Nova Funcionalidade Implementada
 
-Test-Driven Development (TDD) é uma metodologia de desenvolvimento de software fundamentada na escrita de testes automatizados antes da implementação do código de produção. O processo é estruturado em um ciclo de três fases que se repetem de forma contínua ao longo do desenvolvimento.
+## Lesson (Lição)
 
-### 🔴 Red
+A funcionalidade Lesson foi criada para permitir o gerenciamento de lições dentro da aplicação.
 
-O ciclo tem início com a escrita de um teste que descreve o comportamento esperado de uma funcionalidade ainda inexistente. Ao ser executado, esse teste **falha** — o que é o resultado esperado e necessário nesta fase. A falha confirma que o teste está verificando algo real e que não há implementação trivial passando inadvertidamente. Esta etapa obriga o desenvolvedor a definir com precisão o comportamento desejado antes de qualquer decisão de implementação, promovendo um design mais intencional e orientado a requisitos.
+Cada lição possui:
 
-### 🟢 Green
+| Campo | Descrição |
+|---------|------------|
+| id | Identificador da lição |
+| title | Título da lição |
+| description | Descrição da lição |
+| completed | Status de conclusão |
+| createdAt | Data de criação |
+| updatedAt | Data de atualização |
 
-Com o teste falhando, o desenvolvedor implementa o **código mínimo e suficiente** para que ele passe. O foco exclusivo é satisfazer o teste — sem otimizações, sem generalizações prematuras. Ao final desta fase, todos os testes da suíte devem estar passando.
+## Operações Disponíveis
 
-### 🔵 Refactor
+- Criar lição
+- Listar lições
+- Buscar lição por ID
+- Atualizar lição
+- Excluir lição
+- Marcar lição como concluída
 
-Com os testes verdes, o código é **melhorado e reorganizado** com foco em legibilidade, eliminação de duplicações e aplicação de boas práticas de design. A suíte de testes existente atua como rede de segurança: qualquer regressão introduzida durante a refatoração é detectada imediatamente. Ao final, todos os testes continuam passando com o mesmo comportamento de antes.
+## Rotas Disponíveis
 
-Todo o módulo User foi desenvolvido seguindo rigorosamente esse ciclo, ciclo a ciclo, funcionalidade a funcionalidade.
+| Método | Rota | Função |
+|----------|--------|---------|
+| POST | /lessons | Criar lição |
+| GET | /lessons | Listar lições |
+| GET | /lessons/:id | Buscar por ID |
+| PUT | /lessons/:id | Atualizar lição |
+| DELETE | /lessons/:id | Excluir lição |
+| PATCH | /lessons/:id/complete | Marcar como concluída |
+
+## Regras de Negócio
+
+- O título é obrigatório.
+- A descrição é obrigatória.
+- Toda lição inicia com completed = false.
+- Não é possível buscar uma lição inexistente.
+- Não é possível atualizar uma lição inexistente.
+- Não é possível excluir uma lição inexistente.
+- Não é possível marcar como concluída uma lição inexistente.
 
 ---
 
-## Desenvolvimento com TDD
+# Conceito de TDD
 
-O módulo User foi construído em **10 ciclos TDD** sequenciais. Os cinco primeiros ciclos cobriram a camada Service; os cinco seguintes, a camada Controller.
+Test-Driven Development (TDD) é uma metodologia de desenvolvimento baseada na criação de testes antes da implementação do código.
 
-| Ciclo | Fase | Funcionalidade | Testes acumulados |
-|---|---|---|---|
-| 1 | RED → GREEN | `createUser`: caminho de sucesso | 1 ✅ |
-| 2 | RED → GREEN → **REFACTOR** | `createUser`: validações de entrada | 5 ✅ |
-| 3 | RED → GREEN | `findUserById` | 8 ✅ |
-| 4 | RED → GREEN | `updateUser` | 12 ✅ |
-| 5 | RED → GREEN → **REFACTOR** | `deleteUser` | 15 ✅ |
-| 6 | RED | `POST /users` — controller ausente | falha esperada |
-| 7 | RED | `GET /users` — controller ausente | falha esperada |
-| 8 | RED | `GET /users/:id` — controller ausente | falha esperada |
-| 9 | RED | `PUT /users/:id` — controller ausente | falha esperada |
-| 10 | RED → GREEN → **REFACTOR** | Todos os endpoints do Controller | **21 ✅** |
+O processo é dividido em três etapas:
 
-> Nos ciclos 6 a 9, os testes de integração foram escritos antes do arquivo `user.controller.js` existir. A execução resultava em `Error: Failed to load url ../user.controller.js` — estado Red confirmado. O controller só foi implementado no ciclo 10.
+## Red
+
+Criar um teste que inicialmente falha.
+
+## Green
+
+Implementar o código mínimo necessário para fazer o teste passar.
+
+## Refactor
+
+Melhorar a estrutura do código mantendo todos os testes aprovados.
+
+Esse ciclo foi repetido durante toda a implementação da funcionalidade Lesson.
 
 ---
 
-## Testes Unitários
+# Aplicação do TDD no Projeto
 
-**Total: 16 testes unitários**
+## Red
 
-Os testes unitários isolam completamente a lógica de negócio de qualquer dependência externa. O `UserModel` do Sequelize é substituído por um mock construído com `vi.fn()`, garantindo que nenhum teste acesse banco de dados, rede ou sistema de arquivos.
+Inicialmente foi criado um teste verificando que uma lição não poderia ser criada sem título.
 
-```js
-function makeMockUserModel() {
-  return {
-    findOne:  vi.fn(),
-    findByPk: vi.fn(),
-    create:   vi.fn(),
-  };
+Exemplo:
+
+```javascript
+it('deve falhar ao criar lição sem título', async () => {
+  await expect(
+    lessonService.createLesson({
+      title: '',
+      description: 'Descrição'
+    })
+  ).rejects.toThrow('Título é obrigatório.');
+});
+```
+
+Nesse momento o teste falhava porque a validação ainda não existia.
+
+---
+
+## Green
+
+Foi implementada a validação mínima no Service:
+
+```javascript
+if (!data.title || data.title.trim() === '') {
+  throw new Error('Título é obrigatório.');
 }
 ```
 
-O Service é instanciado com esse mock via injeção de dependência:
-
-```js
-const userService = createUserService(UserModel);
-```
-
-### Health Service — 1 teste
-
-| # | Cenário |
-|---|---|
-| 1 | Retorna objeto com `status: 'OK'` e propriedade `timestamp` |
-
-### User Service — 15 testes
-
-#### `createUser` — 5 testes
-
-| # | Cenário |
-|---|---|
-| 1 | Cria usuário com dados válidos e retorna o objeto criado |
-| 2 | Lança erro quando `username` está ausente ou vazio |
-| 3 | Lança erro quando `email` está ausente ou vazio |
-| 4 | Lança erro quando o formato do `email` é inválido |
-| 5 | Lança erro quando o `email` já está cadastrado |
-
-#### `findUserById` — 3 testes
-
-| # | Cenário |
-|---|---|
-| 6 | Retorna o usuário correto quando o ID existe |
-| 7 | Lança erro quando o usuário não é encontrado |
-| 8 | Valida que o objeto retornado possui as propriedades `id`, `username` e `email` |
-
-#### `updateUser` — 4 testes
-
-| # | Cenário |
-|---|---|
-| 9 | Atualiza os dados de um usuário existente com sucesso |
-| 10 | Lança erro ao tentar atualizar um usuário inexistente |
-| 11 | Lança erro ao tentar atualizar com um email de formato inválido |
-| 12 | Lança erro ao tentar atualizar para um email já utilizado por outro usuário |
-
-#### `deleteUser` — 3 testes
-
-| # | Cenário |
-|---|---|
-| 13 | Remove um usuário existente com sucesso |
-| 14 | Lança erro ao tentar remover um usuário inexistente |
-| 15 | Verifica que `findByPk` é chamado com o ID correto antes da remoção |
+Após a implementação o teste passou.
 
 ---
 
-## Testes de Integração
+## Refactor
 
-**Total: 6 testes de integração**
+Foi criada uma função auxiliar para evitar duplicação de código na verificação da existência de uma lição:
 
-Os testes de integração validam o comportamento da camada Controller em conjunto com o roteamento Express, verificando o fluxo completo:
+```javascript
+async function assertLessonExists(id) {
+  const lesson = await LessonModel.findByPk(id);
 
-```
-Requisição HTTP → Express Router → Controller → Service (mockado)
-```
+  if (!lesson) {
+    throw new Error('Lição não encontrada.');
+  }
 
-Não são testes End-to-End: o `UserService` é substituído por um objeto com métodos `vi.fn()`, o que isola o Controller de qualquer acesso a banco de dados. O objetivo é validar exclusivamente o comportamento HTTP do Controller — status codes, estrutura do corpo da resposta e delegação correta ao Service.
-
-Para cada teste é construída uma instância Express isolada:
-
-```js
-function buildTestApp(userService) {
-  const app = express();
-  app.use(express.json());
-  const userController = createUserController(userService);
-
-  return app;
+  return lesson;
 }
 ```
 
-### Cenários testados
-
-| # | Método | Endpoint | Cenário | Status esperado |
-|---|---|---|---|---|
-| 1 | `POST` | `/users` | Criação de usuário com dados válidos | `201 Created` |
-| 2 | `GET` | `/users` | Listagem de todos os usuários | `200 OK` |
-| 3 | `GET` | `/users/:id` | Busca por usuário existente | `200 OK` |
-| 4 | `GET` | `/users/:id` | Busca por usuário inexistente | `404 Not Found` |
-| 5 | `PUT` | `/users/:id` | Atualização de dados do usuário | `200 OK` |
-| 6 | `DELETE` | `/users/:id` | Remoção de usuário | `204 No Content` |
-
-Cada teste verifica:
-
-- o **status HTTP** retornado pelo Controller;
-- a **estrutura e os dados do corpo** da resposta quando aplicável;
-- que o **método correto do Service** foi chamado com os parâmetros esperados.
-
-Os Services são mockados conforme orientação do professor, seguindo o padrão adotado no projeto didático Shortz-App-TDD.
+Essa melhoria reduziu repetição e manteve todos os testes aprovados.
 
 ---
 
-## Cobertura de Testes
+# Testes Unitários
 
-A cobertura foi gerada com o comando:
+Foram implementados **11 testes unitários** para a camada Service da funcionalidade Lesson.
 
-```bash
-npm run test:coverage
+Os testes utilizam mocks do Sequelize para isolar a lógica de negócio.
 
+## Exemplo 1 — Criação de Lição
+
+Objetivo:
+
+Verificar se uma lição é criada corretamente quando os dados são válidos.
+
+Assertions utilizadas:
+
+```javascript
+expect(result).toEqual(mockCreated);
+expect(LessonModel.create).toHaveBeenCalledOnce();
 ```
-
-### Resultados obtidos
-
-| Métrica | Resultado | Meta mínima | Status |
-|---|---|---|---|
-| **Statements** | 94,44% | 80% | ✅ Superada |
-| **Branches** | 91,66% | 80% | ✅ Superada |
-| **Functions** | 100% | 80% | ✅ Superada |
-| **Lines** | 94,44% | 80% | ✅ Superada |
-
-### Significado de cada métrica
-
-- **Statements (instruções):** percentual de instruções individuais do código que foram executadas durante os testes. Uma instrução pode ser uma atribuição, uma chamada de função ou qualquer expressão avaliada.
-
-- **Branches (desvios condicionais):** percentual de ramificações de estruturas condicionais (`if/else`, operadores ternários, `switch`) que foram exercitadas. Uma cobertura alta de branches indica que os testes cobrem tanto os caminhos de sucesso quanto os de falha.
-
-- **Functions (funções):** percentual de funções declaradas no código que foram chamadas ao menos uma vez durante a execução dos testes.
-
-- **Lines (linhas):** percentual de linhas de código-fonte efetivamente executadas. Linhas de declaração, comentários e linhas em branco são excluídas do cálculo.
-
-Todas as quatro métricas superaram a meta mínima de 80% estabelecida pelo professor, confirmando que a suíte de testes cobre adequadamente o comportamento do código de produção implementado.
 
 ---
 
-## Refatorações Realizadas
+## Exemplo 2 — Validação de Descrição Obrigatória
 
-As refatorações foram realizadas na fase **Refactor** dos ciclos TDD, após os testes estarem verdes. Em nenhum momento os testes foram alterados para acomodar as mudanças — a suíte permaneceu completamente verde antes, durante e após cada refatoração.
+Objetivo:
 
-### User Service — extração de `assertUserExists`
+Garantir que uma lição sem descrição não seja criada.
 
-**Antes:** as funções `findUserById`, `updateUser` e `deleteUser` repetiam o mesmo bloco de código para buscar um usuário e lançar erro caso não fosse encontrado:
+Assertions utilizadas:
 
-```js
-
-const user = await UserModel.findByPk(id);
-if (!user) throw new Error('Usuário não encontrado.');
-return user;
+```javascript
+expect(...).rejects.toThrow('Descrição é obrigatória.');
+expect(LessonModel.create).not.toHaveBeenCalled();
 ```
-
-**Depois:** o padrão foi extraído para uma função interna `assertUserExists(id)`, reutilizada pelas três operações:
-
-```js
-async function assertUserExists(id) {
-  const user = await UserModel.findByPk(id);
-  if (!user) throw new Error('Usuário não encontrado.');
-  return user;
-}
-```
-
-**Benefício:** eliminação de duplicação de código, centralização da mensagem de erro e redução do esforço de manutenção — qualquer alteração nessa lógica passa a ser feita em um único lugar.
-
-### User Service — extração de `isValidEmail`
-
-**Antes:** a expressão regular de validação de email estava embutida diretamente na estrutura condicional de `createUser`:
-
-```js
-if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-  throw new Error('Email inválido.');
-```
-
-**Depois:** a lógica foi extraída para a função `isValidEmail(email)`, reutilizada tanto em `createUser` quanto em `updateUser`:
-
-```js
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function isValidEmail(email) {
-  return EMAIL_REGEX.test(email);
-}
-```
-
-**Benefício:** legibilidade aprimorada, reutilização sem duplicação e facilidade para substituir ou evoluir a lógica de validação em um único ponto.
-
-### User Controller — extração de `sendError`
-
-**Antes:** o padrão de resposta de erro estava repetido em todos os handlers do Controller:
-
-```js
-
-res.status(400).json({ error: err.message });
-```
-
-**Depois:** centralizado na função auxiliar `sendError`:
-
-```js
-function sendError(res, status, message) {
-  return res.status(status).json({ error: message });
-}
-```
-
-**Benefício:** uniformidade na estrutura das respostas de erro, eliminação de repetição e simplificação de cada handler, tornando o fluxo principal de cada função mais evidente.
 
 ---
 
-## Resultados Obtidos
+## Exemplo 3 — Marcar Lição como Concluída
 
-Ao final do desenvolvimento, o projeto apresenta os seguintes resultados:
+Objetivo:
 
-- **21 testes** executam com sucesso: 16 unitários e 6 de integração — todos passando;
-- **Cobertura acima da meta** em todas as quatro métricas (Statements, Branches, Functions e Lines);
-- **Ciclo TDD aplicado integralmente** em todos os ciclos de desenvolvimento, com evidência das fases Red, Green e Refactor;
-- **Separação clara de responsabilidades** entre Model, Service e Controller, o que viabilizou o teste isolado de cada camada sem dependências reais;
-- **Refatorações seguras** realizadas com suporte da suíte de testes, sem qualquer regressão introduzida.
+Garantir que o status completed seja alterado para true.
+
+Assertions utilizadas:
+
+```javascript
+expect(mockLesson.update)
+  .toHaveBeenCalledWith({ completed: true });
+
+expect(result).toBe(mockLesson);
+```
 
 ---
 
-## Como Executar
+# Testes de Integração
 
-### Pré-requisitos
+Foram implementados **10 testes de integração** utilizando Supertest.
 
-- Node.js 18 ou superior
-- npm
+Esses testes validam o comportamento HTTP da aplicação.
 
-### Instalação
+## Exemplo 1 — POST /lessons
+
+Objetivo:
+
+Criar uma nova lição.
+
+Validações realizadas:
+
+```javascript
+expect(res.status).toBe(201);
+expect(res.body.title).toBe('TDD');
+```
+
+Resultado esperado:
+
+A API retorna status 201 e os dados da lição criada.
+
+---
+
+## Exemplo 2 — GET /lessons/:id
+
+Objetivo:
+
+Garantir que a API retorne erro quando a lição não existir.
+
+Validações realizadas:
+
+```javascript
+expect(res.status).toBe(404);
+
+expect(res.body.error)
+  .toBe('Lição não encontrada.');
+```
+
+Resultado esperado:
+
+A API retorna status HTTP 404.
+
+---
+
+# Resultados Obtidos
+
+Durante a implementação da N3 foram alcançados os seguintes resultados:
+
+- Nova funcionalidade Lesson implementada com sucesso;
+- Estrutura modular utilizando Model, Service, Controller e Routes;
+- 11 testes unitários implementados;
+- 10 testes de integração implementados;
+- Cobertura das principais regras de negócio;
+- Aplicação prática da metodologia TDD;
+- Evolução segura do projeto através dos testes automatizados.
+
+---
+
+# Como Executar
+
+## Instalação das Dependências
 
 ```bash
 npm install
 ```
 
-### Executar os testes
+## Executar o Projeto
 
 ```bash
-# Executar todos os testes uma vez
-npm run test:run
-
-# Executar em modo watch (desenvolvimento)
-npm test
-
-# Gerar relatório de cobertura
-npm run test:coverage
+npm start
 ```
+
+ou
+
+```bash
+npm run dev
+```
+
+## Executar os Testes
+
+```bash
+npm test
+```
+
+Todos os testes devem ser executados com sucesso.
 
 ---
 
-## Conclusão
+# Conclusão
 
-O desenvolvimento do módulo User com a metodologia Test-Driven Development demonstrou, na prática, como a inversão da ordem tradicional de escrita de código — testes antes da implementação — impacta positivamente a qualidade, a confiabilidade e a manutenibilidade do software produzido.
+A evolução do projeto SkillUp-TDD permitiu aplicar na prática os conceitos estudados durante a disciplina de Testes de Software.
 
-A disciplina de escrever o teste antes da funcionalidade obrigou a definição precisa do comportamento esperado de cada operação antes de qualquer decisão de implementação. Isso resultou em um código de produção mais enxuto, direto e orientado a requisitos verificáveis, sem implementações antecipadas ou funcionalidades não testadas.
+A implementação da funcionalidade Lesson seguiu rigorosamente a metodologia TDD, utilizando o ciclo Red-Green-Refactor para garantir qualidade e segurança durante o desenvolvimento.
 
-A fase de refatoração evidenciou um dos benefícios centrais do TDD: a presença de uma suíte de testes confiável transforma mudanças estruturais no código em operações seguras. As extrações de `assertUserExists`, `isValidEmail` e `sendError` foram realizadas com total confiança de que qualquer regressão seria detectada imediatamente — e nenhuma foi introduzida.
+Os testes unitários validaram as regras de negócio da camada Service, enquanto os testes de integração verificaram o comportamento das rotas e respostas HTTP da aplicação.
 
-A cobertura final — 90,74% de statements, 88,57% de branches, 93,33% de functions e 90,74% de lines — superou a meta mínima de 80% em todas as métricas, confirmando que a suíte de testes exercita adequadamente o comportamento do código implementado.
-
-A separação entre as camadas Service e Controller, viabilizada pelo uso de injeção de dependência e mocks, demonstrou como um design orientado à testabilidade facilita não apenas a escrita dos testes, mas também a localização de falhas, a evolução incremental do sistema e a compreensão do código por outros desenvolvedores.
-
-Conclui-se que o TDD não é apenas uma prática de verificação, mas uma disciplina de design que, ao alinhar especificação, implementação e validação em um único ciclo contínuo, contribui diretamente para a construção de software de maior qualidade.
+Com a adição da nova funcionalidade e da nova suíte de testes, o projeto tornou-se mais robusto, organizado e alinhado às boas práticas de desenvolvimento de software, atendendo aos requisitos propostos para a avaliação N3.

@@ -7,6 +7,7 @@ import flash from 'connect-flash';
 import expressLayouts from 'express-ejs-layouts';
 import userRoutes from './modules/user/user.routes.js';
 import userRoutes    from './modules/user/user.routes.js';
+import lessonRoutes   from './modules/lesson/lesson.routes.js';
 import videoRoutes   from './modules/video/video.routes.js';
 import commentRoutes from './modules/comment/comment.routes.js';
 import likeRoutes    from './modules/like/like.routes.js';
@@ -50,6 +51,7 @@ app.use('/', videoRoutes);
 app.use('/', commentRoutes);
 app.use('/', likeRoutes);
 app.use('/', followRoutes);
+app.use('/', lessonRoutes);
 
 app.get('/', (req, res) => res.render('index', { title: 'Skill-Up-TDD' }));
 
